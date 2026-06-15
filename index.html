@@ -80,17 +80,18 @@
   button { font-family: inherit; }
 
   /* ========== HEADER ========== */
+ /* ========== HEADER ========== */
   .site-header {
     width: 100%;
     background: transparent;
-    padding: 18px 24px;
+    padding: 20px 24px;
   }
-  .site-header .logo { height: 22px; width: auto; }
-  @media (min-width: 768px) {
-    .site-header { padding: 22px 40px; }
-    .site-header .logo { height: 26px; }
+  .site-header .header-inner { max-width: 1180px; margin: 0 auto; }
+  .site-header .logo { height: 36px; width: auto; display: block; }
+  @media (min-width: 900px) {
+    .site-header { padding: 24px 40px; }
+    .site-header .logo { height: 40px; }
   }
-
   /* ========== HERO ========== */
   .hero {
     background: var(--hero-grad);
@@ -802,9 +803,11 @@
 
 <!-- Header -->
 <header class="site-header">
-  <a href="#" aria-label="Coconut VA">
-    <img class="logo" src="/public/coconut-logo.png" alt="coconut" width="120" height="22" />
-  </a>
+  <div class="header-inner">
+    <a href="#" aria-label="Coconut VA">
+      <img class="logo" src="/public/coconut-logo.png" alt="coconut" width="154" height="57" />
+    </a>
+  </div>
 </header>
 
 <!-- Hero -->
