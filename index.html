@@ -7,6 +7,14 @@
 <meta name="description" content="Hand off expense recon before quarter-end. Ramp/Brex fluent specialists, first 40 hours free. No long-term commitments." />
 <meta name="theme-color" content="#0B1E3F" />
 
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Hand Off Expense Recon — Coconut VA" />
+<meta property="og:description" content="Ramp/Brex fluent specialists. First 40 hours free. No long-term commitments." />
+<meta property="og:site_name" content="Coconut VA" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Hand Off Expense Recon — Coconut VA" />
+<meta name="twitter:description" content="Ramp/Brex fluent specialists. First 40 hours free. No long-term commitments." />
+
 <link rel="icon" href="/public/coconut-logo.png" type="image/png" />
 
 <!-- Hero image preload — LCP -->
@@ -14,6 +22,7 @@
 
 <!-- Inter Tight, latin subset, self-hosted, variable woff2 -->
 <link rel="preload" as="font" type="font/woff2" href="/public/fonts/inter-tight-roman-latin.woff2" crossorigin />
+<link rel="preload" as="font" type="font/woff2" href="/public/fonts/inter-tight-italic-latin.woff2" crossorigin />
 <style>
   @font-face {
     font-family: 'Inter Tight';
@@ -1105,6 +1114,10 @@
   var err1 = document.getElementById('err1'), err2 = document.getElementById('err2'), err3 = document.getElementById('err3');
 
   function emailOk(e){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+  function readCookie(name){
+    var m = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/[.$?*|{}()[\]\\\/+^]/g, '\\$&') + '=([^;]*)'));
+    return m ? decodeURIComponent(m[1]) : '';
+  }
   function show(n){
     step1.classList.toggle('hidden', n!==1);
     step2.classList.toggle('hidden', n!==2);
@@ -1120,7 +1133,9 @@
       body: JSON.stringify({
         name: state.name, email: state.email, company: state.company,
         apTool: state.apTool, phone: state.phone, hiringTimeline: state.hiringTimeline,
-        userAgent: navigator.userAgent, stage: stage
+        userAgent: navigator.userAgent, stage: stage,
+        fbp: readCookie('_fbp'), fbc: readCookie('_fbc'),
+        sourceUrl: window.location.href
       })
     }).then(function(r){ return r.json().catch(function(){ return { ok:false }; }); })
       .catch(function(){ return { ok:false }; });

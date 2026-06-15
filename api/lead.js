@@ -42,6 +42,10 @@ export default async function handler(req, res) {
   const phone = clean(raw && raw.phone, 40);
   const hiringTimeline = VALID_TIMELINES.includes(raw && raw.hiringTimeline) ? raw.hiringTimeline : null;
   const userAgent = clean(raw && raw.userAgent, 400) || (req.headers['user-agent'] || '');
+  const fbp = clean(raw && raw.fbp, 200);
+  const fbc = clean(raw && raw.fbc, 400);
+  const sourceUrl = clean(raw && raw.sourceUrl, 500) || PAGE_URL;
+  const clientIp = clientIpFrom(req);
 
   if (!email || !isEmail(email)) return res.status(400).json({ ok: false, error: 'invalid_email' });
   if (!name) return res.status(400).json({ ok: false, error: 'missing_name' });
@@ -95,7 +99,7 @@ export default async function handler(req, res) {
   if (stage === 'complete') {
     await safe(() => notifySlackComplete({ name, email, company, apTool, phone, hiringTimeline }), 'slack:complete');
     await safe(() => notifyEmailComplete({ name, email, company, apTool, phone, hiringTimeline }), 'email:complete');
-    await safe(() => sendCapi({ email, phone, userAgent, eventId }), 'capi');
+    await safe(() => sendCapi({ email, phone, userAgent, eventId, fbp, fbc, sourceUrl, clientIp }), 'capi');
   } else if (stage === 'partial2') {
     await safe(() => notifySlackPartial2({ name, email, company, apTool }), 'slack:partial2');
     await safe(() => notifyEmailPartial2({ name, email, company, apTool }), 'email:partial2');
@@ -109,7 +113,7 @@ export default async function handler(req, res) {
 
 /* ===================== SIDE EFFECTS ===================== */
 
-async function sendCapi({ email, phone, userAgent, eventId }) {
+async function sendCapi({ email, phone, userAgent, eventId, fbp, fbc, sourceUrl, clientIp }) {
   const pixelId = process.env.META_PIXEL_ID;
   const token   = process.env.META_CAPI_ACCESS_TOKEN;
   if (!pixelId || !token) { console.warn('Meta secrets missing — CAPI skipped'); return; }
@@ -120,11 +124,14 @@ async function sendCapi({ email, phone, userAgent, eventId }) {
       event_time: Math.floor(Date.now() / 1000),
       action_source: 'website',
       event_id: eventId,
-      event_source_url: PAGE_URL,
+      event_source_url: sourceUrl || PAGE_URL,
       user_data: {
         em: [sha256(email)],
         ...(phoneDigits ? { ph: [sha256(phoneDigits)] } : {}),
-        ...(userAgent ? { client_user_agent: userAgent } : {})
+        ...(userAgent ? { client_user_agent: userAgent } : {}),
+        ...(fbp ? { fbp } : {}),
+        ...(fbc ? { fbc } : {}),
+        ...(clientIp ? { client_ip_address: clientIp } : {})
       },
       custom_data: { content_name: 'Ramp/Brex Specialist', content_category: 'Expense Recon Ad' }
     }]
@@ -255,6 +262,13 @@ function isEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
 function digits(s) { return String(s || '').replace(/\D/g, ''); }
 function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 function sha256(s) { return crypto.createHash('sha256').update(String(s)).digest('hex'); }
+function clientIpFrom(req) {
+  const xfwd = req.headers['x-forwarded-for'];
+  if (typeof xfwd === 'string' && xfwd) return xfwd.split(',')[0].trim();
+  const real = req.headers['x-real-ip'];
+  if (typeof real === 'string' && real) return real.trim();
+  return (req.socket && req.socket.remoteAddress) || '';
+}
 
 async function safe(fn, tag) {
   try { await fn(); } catch (e) { console.error(`Side-effect ${tag} failed`, e); }
