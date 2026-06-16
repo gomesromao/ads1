@@ -793,6 +793,14 @@
     overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
   }
   html { scroll-behavior: smooth; }
+/* ===== Mobile: form above the fold (Tyler) ===== */
+  #hero-form-slot:empty { display: none; }
+  #hero-form-slot { margin-top: 18px; }
+  @media (max-width: 767px) {
+    body.mobile-form-moved .btn-primary { display: none; }
+    body.mobile-form-moved .form-section { display: none; }
+  }
+
 </style>
 </head>
 <body>
@@ -814,6 +822,9 @@
       <span class="hero-free">First 40 Hours Free</span>
       <p class="lead">You don't need "a VA." You need a <strong>Ramp/Brex fluent specialist</strong> who already lives in your expense stack and can close the books on day one.</p>
       <a class="btn-primary" href="#form" data-cta="hero">Get My Expense Specialist</a>
+<a class="btn-primary" href="#form" data-cta="hero">Get My Expense Specialist</a>
+      <div id="hero-form-slot"></div>
+
       <p class="hero-disclaimer">*First 40 hours free. No long-term commitments.</p>
       <div class="hero-trust">
         <span>👥 <strong>600+</strong> Companies trust us.</span>
@@ -858,11 +869,11 @@
 </section>
 
 <!-- Form section -->
-<section class="form-section" id="form">
+<section class="form-section">
   <div class="form-head">
     <h2>Find talent on your expense stack</h2>
   </div>
-  <div class="form-card-wrap">
+  <div class="form-card-wrap"id="form">
     <div class="form-card">
       <div class="progress">
         <div class="dots"><span class="dot active" id="d1"></span><span class="dot" id="d2"></span><span class="dot" id="d3"></span></div>
@@ -1250,7 +1261,32 @@
   });
 })();
 </script>
-
+<!-- Mobile: form above the fold (Tyler) -->
+<script>
+(function(){
+  var mq = window.matchMedia('(max-width: 767px)');
+  var formWrap = document.getElementById('form');
+  var heroSlot = document.getElementById('hero-form-slot');
+  if (!formWrap || !heroSlot) return;
+  var homeParent = formWrap.parentNode;
+  var homeNext = formWrap.nextSibling;
+  function place(e){
+    if (e.matches) {
+      if (formWrap.parentNode !== heroSlot) heroSlot.appendChild(formWrap);
+      document.body.classList.add('mobile-form-moved');
+    } else {
+      if (formWrap.parentNode !== homeParent) {
+        if (homeNext && homeNext.parentNode === homeParent) homeParent.insertBefore(formWrap, homeNext);
+        else homeParent.appendChild(formWrap);
+      }
+      document.body.classList.remove('mobile-form-moved');
+    }
+  }
+  place(mq);
+  if (mq.addEventListener) mq.addEventListener('change', place);
+  else if (mq.addListener) mq.addListener(place);
+})();
+</script>
 <!-- ===================== Meta Pixel (deferred, non-blocking) ===================== -->
 <script>
 window.addEventListener('load', function () {
